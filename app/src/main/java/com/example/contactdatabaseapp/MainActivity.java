@@ -2,17 +2,35 @@ package com.example.contactdatabaseapp;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    RecyclerView recyclerView;
     DatabaseHelper db;
-    EditText etName, etPhone, etEmail, etSearch, etUpdatePhone, etUpdateEmail;
-    Button btnAdd, btnView, btnSearch, btnDelete, btnUpdate;
+    List<Contact> contactList;
+    ContactAdapter adapter;
+    FloatingActionButton fabAdd;
+
+    private int selectedAvatarId = android.R.drawable.ic_menu_gallery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,128 +38,134 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         db = new DatabaseHelper(this);
+        contactList = new ArrayList<>();
 
-        etName = findViewById(R.id.etName);
-        etPhone = findViewById(R.id.etPhone);
-        etEmail = findViewById(R.id.etEmail);
-        etSearch = findViewById(R.id.etSearch);
-        etUpdatePhone = findViewById(R.id.etUpdatePhone);
-        etUpdateEmail = findViewById(R.id.etUpdateEmail);
+        recyclerView = findViewById(R.id.recycler_view_contacts);
+        fabAdd = findViewById(R.id.fab_add);
 
-        btnAdd = findViewById(R.id.btnAdd);
-        btnView = findViewById(R.id.btnView);
-        btnSearch = findViewById(R.id.btnSearch);
-        btnDelete = findViewById(R.id.btnDelete);
-        btnUpdate = findViewById(R.id.btnUpdate);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        btnAdd.setOnClickListener(v -> addContact());
-        btnView.setOnClickListener(v -> viewContacts());
-        btnSearch.setOnClickListener(v -> searchContact());
-        btnDelete.setOnClickListener(v -> deleteContact());
-        btnUpdate.setOnClickListener(v -> updateContact());
-    }
-
-    private void addContact() {
-        String name = etName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-
-        if (name.isEmpty() || phone.isEmpty()) {
-            Toast.makeText(this, "Name and Phone are required", Toast.LENGTH_SHORT).show();
-            return;
+        if (db.getAllData().getCount() == 0) {
+            db.insertData("Duy", "0382611031", "duy@email.com", R.drawable.kafka);
+            db.insertData("Dong", "0382611032", "manh@email.com", R.drawable.suisei);
         }
 
-        boolean inserted = db.insertData(name, phone, email);
-        if (inserted) {
-            Toast.makeText(this, "Contact added successfully", Toast.LENGTH_SHORT).show();
-            etName.setText("");
-            etPhone.setText("");
-            etEmail.setText("");
-        } else {
-            Toast.makeText(this, "Error adding contact", Toast.LENGTH_SHORT).show();
-        }
+        loadContacts();
+        adapter = new ContactAdapter(this, contactList, new ContactAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Contact contact) {
+                showDetailDialog(contact);
+            }
+        });
+        recyclerView.setAdapter(adapter);
+
+        fabAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAddContactDialog();
+            }
+        });
     }
 
-    private void viewContacts() {
+    private void showDetailDialog(Contact contact) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_contact_detail, null);
+        builder.setView(view);
+
+        AlertDialog dialog = builder.create();
+
+        ImageView imgAvatar = view.findViewById(R.id.imgDetailAvatar);
+        TextView tvName = view.findViewById(R.id.tvDetailName);
+        TextView tvPhone = view.findViewById(R.id.tvDetailPhone);
+        TextView tvEmail = view.findViewById(R.id.tvDetailEmail);
+        Button btnClose = view.findViewById(R.id.btnClose);
+
+        imgAvatar.setImageResource(contact.getAvatarId());
+        tvName.setText(contact.getName());
+        tvPhone.setText("Phone: " + contact.getPhone());
+        tvEmail.setText("Email: " + contact.getEmail());
+
+        // Nút đóng dialog
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+    private void showAddContactDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_add_contact, null);
+        builder.setView(view);
+
+        final EditText etName = view.findViewById(R.id.etName);
+        final EditText etPhone = view.findViewById(R.id.etPhone);
+        final EditText etEmail = view.findViewById(R.id.etEmail);
+
+        final ImageView img1 = view.findViewById(R.id.imgOption1);
+        final ImageView img2 = view.findViewById(R.id.imgOption2);
+        final ImageView img3 = view.findViewById(R.id.imgOption3);
+
+        img1.setImageResource(android.R.drawable.ic_menu_gallery);
+        img2.setImageResource(R.drawable.kafka);
+        img3.setImageResource(R.drawable.suisei);
+
+        selectedAvatarId = android.R.drawable.ic_menu_gallery;
+        img1.setBackgroundColor(Color.LTGRAY);
+        img2.setBackgroundColor(Color.TRANSPARENT);
+        img3.setBackgroundColor(Color.TRANSPARENT);
+
+        img1.setOnClickListener(v -> {
+            selectedAvatarId = android.R.drawable.ic_menu_gallery;
+            img1.setBackgroundColor(Color.LTGRAY);
+            img2.setBackgroundColor(Color.TRANSPARENT);
+            img3.setBackgroundColor(Color.TRANSPARENT);
+        });
+
+        img2.setOnClickListener(v -> {
+            selectedAvatarId = R.drawable.kafka;
+            img1.setBackgroundColor(Color.TRANSPARENT);
+            img2.setBackgroundColor(Color.LTGRAY);
+            img3.setBackgroundColor(Color.TRANSPARENT);
+        });
+
+        img3.setOnClickListener(v -> {
+            selectedAvatarId = R.drawable.suisei;
+            img1.setBackgroundColor(Color.TRANSPARENT);
+            img2.setBackgroundColor(Color.TRANSPARENT);
+            img3.setBackgroundColor(Color.LTGRAY);
+        });
+
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String name = etName.getText().toString().trim();
+                String phone = etPhone.getText().toString().trim();
+                String email = etEmail.getText().toString().trim();
+
+                if (!name.isEmpty()) {
+                    boolean isInserted = db.insertData(name, phone, email, selectedAvatarId);
+                    if (isInserted) {
+                        Toast.makeText(MainActivity.this, "Contact Added", Toast.LENGTH_SHORT).show();
+                        contactList.clear();
+                        loadContacts();
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Name required!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.create().show();
+    }
+
+    private void loadContacts() {
         Cursor res = db.getAllData();
-        if (res.getCount() == 0) {
-            showMessage("Error", "No contacts found");
-            return;
-        }
-
-        StringBuilder buffer = new StringBuilder();
+        if (res.getCount() == 0) return;
         while (res.moveToNext()) {
-            buffer.append("ID: ").append(res.getString(0)).append("\n");
-            buffer.append("Name: ").append(res.getString(1)).append("\n");
-            buffer.append("Phone: ").append(res.getString(2)).append("\n");
-            buffer.append("Email: ").append(res.getString(3)).append("\n\n");
+            contactList.add(new Contact(res.getInt(0), res.getString(1), res.getString(2), res.getString(3), res.getInt(4)));
         }
-        showMessage("All Contacts", buffer.toString());
-    }
-
-    private void searchContact() {
-        String name = etSearch.getText().toString().trim();
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Enter a name to search", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Cursor res = db.getDataByName(name);
-        if (res.getCount() == 0) {
-            showMessage("Not found", "No contacts matching: " + name);
-            return;
-        }
-
-        StringBuilder buffer = new StringBuilder();
-        while (res.moveToNext()) {
-            buffer.append("ID: ").append(res.getString(0)).append("\n");
-            buffer.append("Name: ").append(res.getString(1)).append("\n");
-            buffer.append("Phone: ").append(res.getString(2)).append("\n");
-            buffer.append("Email: ").append(res.getString(3)).append("\n\n");
-        }
-        showMessage("Search Result", buffer.toString());
-    }
-
-    private void deleteContact() {
-        String name = etSearch.getText().toString().trim();
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Enter a name to delete", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int deletedRows = db.deleteDataByName(name);
-        if (deletedRows > 0) {
-            Toast.makeText(this, "Contact deleted successfully", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "No contact found with that name", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void updateContact() {
-        String name = etSearch.getText().toString().trim();
-        String phone = etUpdatePhone.getText().toString().trim();
-        String email = etUpdateEmail.getText().toString().trim();
-
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Enter name to update", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        boolean updated = db.updateDataByName(name, phone, email);
-        if (updated) {
-            Toast.makeText(this, "Contact updated successfully", Toast.LENGTH_SHORT).show();
-            etUpdatePhone.setText("");
-            etUpdateEmail.setText("");
-        } else {
-            Toast.makeText(this, "No contact found with that name", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void showMessage(String title, String message) {
-        new AlertDialog.Builder(this)
-                .setCancelable(true)
-                .setTitle(title)
-                .setMessage(message)
-                .show();
     }
 }

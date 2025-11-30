@@ -8,15 +8,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "Contacts.db";
     private static final String TABLE_NAME = "contacts";
     private static final String COL_ID = "id";
     private static final String COL_NAME = "name";
     private static final String COL_PHONE = "phone";
     private static final String COL_EMAIL = "email";
+    private static final String COL_AVATAR_ID = "avatar_id";
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -25,7 +27,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_NAME + " TEXT, " +
                 COL_PHONE + " TEXT, " +
-                COL_EMAIL + " TEXT)");
+                COL_EMAIL + " TEXT, " +
+                COL_AVATAR_ID + " INTEGER)");
     }
 
     @Override
@@ -34,29 +37,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertData(String name, String phone, String email) {
+    public boolean insertData(String name, String phone, String email, int avatarId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_NAME, name);
         values.put(COL_PHONE, phone);
         values.put(COL_EMAIL, email);
+        values.put(COL_AVATAR_ID, avatarId);
         long result = db.insert(TABLE_NAME, null, values);
         return result != -1;
     }
 
     public Cursor getAllData() {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        return db.rawQuery(
+                "SELECT * FROM " + TABLE_NAME,
+                null);
     }
 
     public Cursor getDataByName(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + COL_NAME + " LIKE ?", new String[]{"%" + name + "%"});
+        return db.rawQuery(
+                "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_NAME + " LIKE ?",
+                new String[]{"%" + name + "%"});
     }
 
     public int deleteDataByName(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(TABLE_NAME, COL_NAME + "=?", new String[]{name});
+        return db.delete(
+                TABLE_NAME, COL_NAME + "=?",
+                new String[]{name});
     }
 
     public boolean updateDataByName(String name, String phone, String email) {
@@ -64,8 +74,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COL_PHONE, phone);
         values.put(COL_EMAIL, email);
-        int result = db.update(TABLE_NAME, values, COL_NAME + "=?", new String[]{name});
+
+        int result = db.update(
+                TABLE_NAME, values, COL_NAME + "=?",
+                new String[]{name});
         return result > 0;
     }
-
 }

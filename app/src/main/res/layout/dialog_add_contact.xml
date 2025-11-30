@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Contact"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/etName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name" />
+
+    <EditText
+        android:id="@+id/etPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Phone"
+        android:inputType="phone" />
+
+    <EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose Avatar:"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="5dp">
+
+        <ImageView
+            android:id="@+id/imgOption1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:layout_marginEnd="10dp"/>
+
+        <ImageView
+            android:id="@+id/imgOption2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/kafka"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:layout_marginEnd="10dp"/>
+
+        <ImageView
+            android:id="@+id/imgOption3"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/suisei"
+            android:background="@android:color/transparent"
+            android:padding="4dp"/>
+    </LinearLayout>
+
+</LinearLayout>
