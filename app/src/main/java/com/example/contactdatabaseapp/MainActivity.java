@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (db.getAllData().getCount() == 0) {
             db.insertData("Duy", "0382611031", "duy@email.com", R.drawable.kafka);
-            db.insertData("Dong", "0382611032", "manh@email.com", R.drawable.suisei);
+            db.insertData("Dong", "0382611032", "dong@email.com", R.drawable.suisei);
         }
 
         loadContacts();
@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
         tvPhone.setText("Phone: " + contact.getPhone());
         tvEmail.setText("Email: " + contact.getEmail());
 
-        // Nút đóng dialog
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
